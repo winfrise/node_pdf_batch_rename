@@ -1,19 +1,12 @@
 {
-  "name": "node_pdf_split",
+  "name": "pdf-renamer",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "按子文件夹处理单个PDF并输出到其output目录",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "chalk": "^4.1.2",
-    "core-js": "^3.47.0",
-    "fs-extra": "^11.3.3",
-    "pdf-lib": "^1.17.1",
-    "pdf-parse": "^2.4.5",
-    "pdfjs-dist": "^2.12.313"
+    "pdfjs-dist": "2.12.313",
+    "fs-extra": "^11.2.0"
   }
 }
