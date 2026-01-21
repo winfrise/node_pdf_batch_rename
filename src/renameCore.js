@@ -2,10 +2,8 @@ const fs = require('fs-extra');
 const path = require('path');
 const pdfjs = require('pdfjs-dist/legacy/build/pdf');
 
-// === 内置默认规则 ===
 const DEFAULT_NAMING_RULES = {
   topText: async (pdfPath) => {
-    // ...（你原有的 topText 逻辑，保持不变）
     const data = new Uint8Array(await fs.readFile(pdfPath));
     const loadingTask = pdfjs.getDocument({ data });
     const pdfDoc = await loadingTask.promise;
@@ -45,24 +43,21 @@ const DEFAULT_NAMING_RULES = {
   }
 };
 
-// === 加载用户自定义规则（如果存在）===
 function loadNamingRules() {
   const userRulesPath = path.join(__dirname, '..', 'config', 'namingRules.js');
   let userRules = {};
   if (fs.existsSync(userRulesPath)) {
     try {
+      delete require.cache[require.resolve(userRulesPath)];
       userRules = require(userRulesPath);
-      console.log('🔧 已加载自定义命名规则:', Object.keys(userRules));
+      console.log(`🔧 已加载自定义命名规则: ${Object.keys(userRules).join(', ')}`);
     } catch (err) {
-      console.warn('⚠️ 自定义规则加载失败，使用默认规则:', err.message);
+      console.warn(`⚠️ 自定义规则加载失败，使用默认规则: ${err.message}`);
     }
   }
-
-  // 合并：用户规则优先
   return { ...DEFAULT_NAMING_RULES, ...userRules };
 }
 
-// === 公共工具 ===
 function sanitizeFilename(str, maxLength = 80) {
   if (!str) return 'unnamed';
   return str
@@ -73,22 +68,27 @@ function sanitizeFilename(str, maxLength = 80) {
     .replace(/^_+|_+$/g, '');
 }
 
-// === 主函数 ===
 exports.processSinglePdf = async (inputPdfPath, outputDir, ruleName = 'topText') => {
   await fs.ensureDir(outputDir);
 
-  const NAMING_RULES = loadNamingRules(); // 每次运行时动态加载（方便热更新）
+  const NAMING_RULES = loadNamingRules();
 
   if (!NAMING_RULES[ruleName]) {
-    throw new Error(`未知命名规则: "${ruleName}"。可用规则: ${Object.keys(NAMING_RULES).join(', ')}`);
+    const available = Object.keys(NAMING_RULES).join(', ');
+    throw new Error(`未知命名规则: "${ruleName}"。可用规则: ${available}`);
   }
 
-  let title = await NAMING_RULES[ruleName](inputPdfPath);
+  let title;
+  try {
+    title = await NAMING_RULES[ruleName](inputPdfPath);
+  } catch (err) {
+    console.warn(`    ⚠️ 规则 "${ruleName}" 执行出错: ${err.message}`);
+    title = null;
+  }
 
   if (!title) {
-    // 回退到原文件名（安全兜底）
     title = path.basename(inputPdfPath, '.pdf');
-    console.log(`    ⚠️ 规则 "${ruleName}" 未提取标题，使用原文件名: ${title}`);
+    console.log(`    ⚠️ 使用原文件名: ${title}`);
   }
 
   let safeName = sanitizeFilename(title, 80);

@@ -4,7 +4,6 @@ const path = require('path');
 const CONFIG_PATH = path.join(__dirname, '..', 'config', 'config.json');
 const INPUT_BASE_DIR = path.join(__dirname, '..', 'input');
 
-// 检查主配置文件
 if (!fs.existsSync(CONFIG_PATH)) {
   console.error('❌ config/config.json 不存在！');
   console.log('\n请创建 config/config.json，格式如下：');

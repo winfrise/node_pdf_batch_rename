@@ -1,9 +1,10 @@
 {
   "name": "pdf-renamer",
   "version": "1.0.0",
-  "description": "按子文件夹处理单个PDF并输出到其output目录",
+  "description": "批量重命名PDF：按子文件夹处理，支持自定义命名规则与开发辅助",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "dev-rule": "DEBUG_TEXT=1 node scripts/ruleDev.js"
   },
   "dependencies": {
     "pdfjs-dist": "2.12.313",
